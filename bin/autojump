@@ -144,11 +144,15 @@ def add_path(data, path, weight=10):
     with resulting duplicate entries in the database than a single canonical
     path.
     """
-    path = unico(path).rstrip(os.sep)
-    if path == os.path.expanduser('~'):
+    path = os.path.realpath(unico(path).rstrip(os.sep))
+    if path == os.path.realpath(os.path.expanduser('~')):
+        return data, Entry(path, 0)
+    if path == os.path.realpath(os.path.expanduser('~/home')):
         return data, Entry(path, 0)
 
     data[path] = sqrt((data.get(path, 0) ** 2) + (weight ** 2))
+
+    add_path(data, os.path.abspath(os.path.join(path, os.pardir)), weight/3)
 
     return data, Entry(path, data[path])
 
